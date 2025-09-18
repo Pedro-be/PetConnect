@@ -1,0 +1,48 @@
+#navbar {
+    background-color: #FFFFFF;
+    height: 69px;
+}
+
+
+@media (min-width: 768px) {
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+  
+  .menu-toggle {
+    display: none;
+  }
+}
+
+.menu-item:hover {
+  background-color: #FED7AA;
+  color: #F97316 !important;
+}
+
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+.show {
+  transform: translateX(0) !important;
+}
+
+.text-danger {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.form-control.is-invalid {
+  margin-bottom: 0;
+}
+
+/* Estilos responsive para el formulario */
+.form-control {
+  max-width: 100%;
+}
+
+/* Ajustes para pantallas pequeñas */
+
+
