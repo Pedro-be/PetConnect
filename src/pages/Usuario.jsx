@@ -5,25 +5,39 @@ function Usuario() {
     const [imagenPerfil, setImagenPerfil] = useState(null);
 
     useEffect(() => {
-        const obtenerImagenPerfil = async () => {
+        // Función para obtener los datos del perfil del usuario
+        const obtenerDatosPerfil = async () => {
             try {
-                const res = await fetch("http://localhost:5000/obtener-imagen-perfil", {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    // Si no hay token, no se hace la petición
+                    return;
+                }
+
+                // Hacemos la petición al endpoint que devuelve los datos del perfil
+                const res = await fetch("http://localhost:5000/api/usuario/perfil", {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    setImagenPerfil(data.imagenUrl);
+                    // Verificamos si el usuario tiene una imagen de perfil
+                    if (data && data.imagen) {
+                        // Construimos la URL completa de la imagen
+                        setImagenPerfil(`http://localhost:5000${data.imagen}`);
+                    }
+                } else {
+                    console.error("Error al obtener el perfil:", await res.text());
                 }
             } catch (error) {
                 console.error("Error al obtener la imagen de perfil:", error);
             }
         };
 
-        obtenerImagenPerfil();
-    }, []);
+        obtenerDatosPerfil();
+    }, []); // El array vacío asegura que se ejecute solo una vez
 
     return (
         <>
@@ -32,9 +46,10 @@ function Usuario() {
                     to="/PerfilUsuario"
                     style={{ color: "#F97316", textDecoration: "none" }}
                 >
+                    {/* La imagen de perfil del usuario o una por defecto */}
                     <img 
                         src={imagenPerfil || "/petconnect.webp"} 
-                        alt="PetConnect" 
+                        alt="Foto de perfil" 
                         width="32" 
                         height="32" 
                         style={{

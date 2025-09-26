@@ -50,7 +50,7 @@ function Sidebar() {
         {/* Menú de opciones */}
         <nav>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            <MenuItem icon="👤" text="Mi Perfil" to="/perfil" onClick={() => setIsOpen(false)} />
+            <MenuItem icon="👤" text="Mi Perfil" to="/PerfilUsuario" onClick={() => setIsOpen(false)} />
             <MenuItem icon="🐾" text="Mis Mascotas" to="/mascotas" onClick={() => setIsOpen(false)} />
             <MenuItem icon="📅" text="Citas" to="/citas" onClick={() => setIsOpen(false)} />
             <MenuItem icon="💊" text="Medicamentos" to="/medicamentos" onClick={() => setIsOpen(false)} />

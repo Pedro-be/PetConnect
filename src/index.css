@@ -46,3 +46,40 @@
 /* Ajustes para pantallas pequeñas */
 
 
+
+/* src/styles.css o un archivo CSS similar */
+
+.pet-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 3px solid #f8f9fa; /* Borde sutil para resaltar */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pet-image-placeholder {
+  width: 100px;
+  height: 100px;
+  background-color: #e9ecef; /* Color gris para el placeholder */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.2rem; /* Tamaño de los íconos */
+}
+
+/* Color principal de la marca, basado en tu botón original */
+:root {
+  --primary-color: #F97316;
+  --primary-color-hover: #EA580C; /* Un tono más oscuro para el hover */
+}
+
+
+
+
+

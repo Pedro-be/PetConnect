@@ -5,69 +5,33 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Register() {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const registrar = async () => {
-    const res = await fetch("http://localhost:5000/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, password }),
-    });
-
-    const data = await res.json();
-    alert(data.message);
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setError
   } = useForm();
 
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-  try {
-    // Primero verificamos si el email existe
-    const checkEmail = await fetch("http://localhost:5000/check-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: data.email }),
-    });
-
-    const emailCheck = await checkEmail.json();
-
-    if (emailCheck.exists) {
-      toast.error("Este correo ya está registrado", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+    try {
+      // Si el email no existe, procedemos con el registro
+      const res = await fetch("http://localhost:5000/api/usuario/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: data.name, // Cambiado de name a nombre para coincidir con el backend
+          email: data.email,
+          password: data.password,
+        }),
       });
-      return;
-    }
 
-    // Si el email no existe, procedemos con el registro
-    const res = await fetch("http://localhost:5000/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
-      }),
-    });
+      const result = await res.json();
 
-    const result = await res.json();
-
-    if (res.ok) {
-      toast.success('¡Registro exitoso!', {
+      if (res.ok) {
+        toast.success('¡Registro exitoso!', {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
@@ -75,42 +39,50 @@ function Register() {
           pauseOnHover: true,
           draggable: true,
         });
-        setTimeout(() => navigate("/Header"), 2000);
-    } else {
-      toast.error(result.message || "Error al registrar", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        setTimeout(() => navigate("/login"), 2000); // Cambiado a /login en lugar de /Header
+      } else {
+        toast.error(result.message || "Error al registrar");
+      }
+    } catch (error) {
+      console.error("Error al conectar con backend:", error);
+      toast.error("Error al conectar con el servidor");
     }
-  } catch (error) {
-    console.error("Error al conectar con backend:", error);
-      toast.error("Error al conectar con el servidor", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-    });
-  }
-};
+  };
 
-const validateEmail = async (email) => {
-  try {
-    const res = await fetch("http://localhost:5000/check-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    return !data.exists || "Este correo ya está registrado";
-  } catch (error) {
-    return true; // Permitir continuar si hay error de conexión
-  }
+  const validateEmail = async (email) => {
+    try {
+        const res = await fetch(
+            `http://localhost:5000/api/usuario/check-email?email=${encodeURIComponent(email)}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const data = await res.json();
+        
+        if (data.exists) {
+            toast.warning(data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+            setError('email', {
+                type: 'manual',
+                message: 'Este email ya está registrado'
+            });
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error al verificar email:', error);
+        return true;
+    }
 };
 
   return (
@@ -178,7 +150,6 @@ const validateEmail = async (email) => {
                   className="form-control rounded-3"
                   id="name"
                   placeholder="Tu nombre"
-                  onChange={e => setNombre(e.target.value)}
                 />
                 {errors.name && (
                   <p className="text-danger">{errors.name.message}</p>
@@ -192,21 +163,23 @@ const validateEmail = async (email) => {
                 </label>
                 <input
                   type="email"
+                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
                   {...register("email", {
-                    required: "El email es obligatorio",
+                    required: "El email es requerido",
                     pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Formato de email inválido",
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Email inválido"
                     },
                     validate: validateEmail
                   })}
                   className="form-control rounded-3"
                   id="email"
                   placeholder="tu@email.com"
-                  onChange={e => setEmail(e.target.value)}
                 />
                 {errors.email && (
-                  <p className="text-danger">{errors.email.message}</p>
+                  <div className="invalid-feedback">
+                    {errors.email.message}
+                  </div>
                 )}
               </div>
 
@@ -227,7 +200,6 @@ const validateEmail = async (email) => {
                   className="form-control rounded-3"
                   id="password"
                   placeholder="Crea tu contraseña"
-                  onChange={e => setPassword(e.target.value)}
                 />
                 {errors.password && (
                   <p className="text-danger">{errors.password.message}</p>

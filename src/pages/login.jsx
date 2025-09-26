@@ -11,7 +11,7 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const res = await fetch("http://localhost:5000/login", {
+    const res = await fetch("http://localhost:5000/api/usuario/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -27,12 +27,12 @@ function Login() {
     formState: { errors },
   } = useForm();
 
-  const naviagate = useNavigate();
+  const navigate = useNavigate();
 
   // función al enviar formulario
   const onSubmit = async (data) => {
   try {
-    const res = await fetch("http://localhost:5000/login", {
+    const res = await fetch("http://localhost:5000/api/usuario/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -44,6 +44,8 @@ function Login() {
     const result = await res.json();
 
     if (res.ok) {
+      // Guardamos el token
+        localStorage.setItem("token", result.token);
       toast.success(result.message, {
     position: "top-right",
     autoClose: 2000,
@@ -52,8 +54,8 @@ function Login() {
     pauseOnHover: true,
     draggable: true,
   });
-  console.log("Usuario:", result.usuario);
-  setTimeout(() => naviagate("/Header"), 2000);
+  
+    setTimeout(() => navigate("/Header"), 2000);
     } else {
       toast.error(result.message || "Credenciales incorrectas", {
           position: "top-right",
@@ -65,7 +67,6 @@ function Login() {
         });
     }
   } catch (error) {
-    console.error("Error al conectar con backend:", error);
       toast.error("Error al conectar con el servidor", {
         position: "top-right",
         autoClose: 3000,

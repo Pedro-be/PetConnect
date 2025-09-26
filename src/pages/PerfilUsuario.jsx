@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import Sidebar from "./Sidebar";
+import Sidebar from "./Sidebar.jsx";
 import ModalMascostas from "./componentes/modal";
-import Modal from 'react-bootstrap/Modal'
-import axios from "axios";
+import PetCard from "./componentes/PetCard.jsx";
 
 function PerfilUsuario() {
   const {
@@ -15,52 +14,109 @@ function PerfilUsuario() {
     formState: { errors },
   } = useForm();
 
+  const navigate = useNavigate();
+
   const [imagenPerfil, setImagenPerfil] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState("/petconnect.webp");
+  const [mascotas, setMascotas] = useState([]);
 
-  // Cargar datos del usuario al montar el componente
-  useEffect(() => {
-    const cargarDatosUsuario = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/perfil", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  // ✅ Función para cargar los datos del usuario, movida fuera de useEffect
+  const cargarDatosUsuario = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        if (res.ok) {
-          const usuario = await res.json();
-          // Prellenar el formulario con los datos actuales
-          setValue("nombre", usuario.nombre);
-          setValue("email", usuario.email);
-          setValue("telefono", usuario.telefono);
-          setValue("direccion", usuario.direccion);
+      const res = await fetch("http://localhost:5000/api/usuario/perfil", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setValue("nombre", data.nombre);
+        setValue("email", data.email);
+        setValue("telefono", data.telefono);
+        setValue("ciudad", data.ciudad);
+        if (data.imagen) {
+          setProfileImageUrl(`${import.meta.env.VITE_API_URL}${data.imagen}`);
         }
-      } catch (error) {
-        toast.error("Error al cargar los datos del usuario");
+      } else {
+        toast.error("No se pudieron cargar los datos del perfil.");
       }
-    };
-
-    cargarDatosUsuario();
+    } catch (error) {
+      console.error("Error al cargar datos del usuario:", error);
+      toast.error("Error de conexión al cargar el perfil.");
+    }
   }, [setValue]);
 
+  const fetchMascotas = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch("http://localhost:5000/api/mascotas", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMascotas(data || []);
+      } else {
+        toast.error("No se pudieron cargar las mascotas.");
+      }
+    } catch (error) {
+      console.error("Error al obtener mascotas:", error);
+      toast.error("Error de conexión al cargar mascotas.");
+    }
+  }, []);
+
+  // ✅ Función para actualizar la UI de mascotas, movida fuera de useEffect
+  const handlePetUpdate = useCallback((mascotasActualizadas) => {
+    setMascotas((mascotasPrevias) =>
+      mascotasPrevias.map((pet) =>
+        pet.id === mascotasActualizadas.id ? mascotasActualizadas : pet
+      )
+    );
+  }, []);
+
+  // useEffect ahora solo se encarga de llamar a las funciones al cargar
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Por favor, inicia sesión para ver tu perfil.");
+      navigate("/login");
+      return;
+    }
+    cargarDatosUsuario();
+    fetchMascotas();
+  }, [navigate, cargarDatosUsuario, fetchMascotas]);
+
+  // Función para manejar el envío del formulario de actualización de perfil
   const onSubmit = async (data) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("No hay sesión activa");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("nombre", data.nombre);
       formData.append("email", data.email);
       formData.append("telefono", data.telefono);
       formData.append("ciudad", data.ciudad);
-      formData.append("direccion", data.direccion);
+      formData.append("direccion", data.direccion || '');
 
       if (imagenPerfil) {
         formData.append("imagen", imagenPerfil);
       }
 
-      const res = await fetch("http://localhost:5000/actualizar-perfil", {
+      const res = await fetch("http://localhost:5000/api/usuario/actualizar", {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -69,6 +125,8 @@ function PerfilUsuario() {
 
       if (res.ok) {
         toast.success("Perfil actualizado exitosamente");
+        // Vuelve a cargar los datos para reflejar los cambios (como la nueva foto)
+        await cargarDatosUsuario();
       } else {
         toast.error(resultado.message || "Error al actualizar el perfil");
       }
@@ -81,114 +139,58 @@ function PerfilUsuario() {
   return (
     <div style={{ display: "flex" }}>
       <Sidebar />
-      <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={{ marginLeft: "250px", width: "80vw" }}>
-          {/* Header con título y botones */}
-          <div className=" d-flex justify-content-between align-items-center p-4 border-bottom ">
-            <div>
-              <h1
-                className="mb-1"
-                style={{
-                  fontSize: "30px",
-                }}
-              >
-                Editar Perfil
-              </h1>
-              <p className="text-muted mb-0">
-                Actualiza tu información personal y la de tus mascotas
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                className="btn btn-light me-2"
-                onClick={() => window.history.back()}
-                style={{
-                  border: "1px solid #dee2e6",
-                  padding: "8px 20px",
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                className="btn"
-                onClick={handleSubmit(onSubmit)}
-                style={{
-                  backgroundColor: "#F97316",
-                  color: "white",
-                  padding: "8px 20px",
-                }}
-              >
-                Guardar Cambios
-              </button>
-            </div>
+      <div style={{ marginLeft: "250px", flexGrow: 1, padding: "2rem" }}>
+        {/* Header con título y botones */}
+        <div className="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+          <div>
+            <h1 className="h2 mb-0">Editar Perfil</h1>
+            <p className="text-muted mb-0">
+              Actualiza tu información personal y la de tus mascotas
+            </p>
           </div>
-
-          {/* Contenido del formulario */}
-          <div
-            className="container mt-4"
-            style={{ display: "flex", gap: "20px", marginLeft: "5vh" }}
-          >
-            <div
-              style={{
-                height: "700px",
-                width: "331px",
-                backgroundColor: "#FFFFFF",
-                borderRadius: "8px",
-                boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)", // Increased shadow for elevation
-                transform: "translateY(-20px)", // Slightly elevate the box
-                marginTop: "2vh", // Add 25% margin from the top
-                marginBottom: "25vh", // Add 25% margin from the bottom
-              }}
+          <div>
+            <button
+              className="btn btn-light me-2"
+              onClick={() => navigate(-1)}
             >
-              <h3 className="fs-5 mt-4 ms-4">Tu Informacion</h3>
-              <div
-                style={{
-                  height: "670px",
-                  width: "331px",
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: "8px",
-                  boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-                  transform: "translateY(-20px)",
-                  marginTop: "2vh",
-                  marginBottom: "25vh",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginTop: "30px",
-                  }}
-                >
+              Cancelar
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={handleSubmit(onSubmit)}
+              style={{ backgroundColor: "#F97316", borderColor: "#F97316" }}
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </div>
+
+        {/* Contenido principal en dos columnas */}
+        <div className="row">
+          {/* --- Columna de Información del Usuario --- */}
+          <div className="col-lg-4">
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title mb-4">Tu Información</h5>
+                <div className="text-center mb-4">
                   <img
                     src={
                       imagenPerfil
                         ? URL.createObjectURL(imagenPerfil)
-                        : "/petconnect.webp"
+                        : profileImageUrl
                     }
                     alt="Foto de perfil"
+                    className="rounded-circle"
                     style={{
                       height: "128px",
                       width: "128px",
-                      borderRadius: "50%",
                       objectFit: "cover",
                     }}
-                    className="mx-auto d-block mt-3"
                   />
                   <label
                     htmlFor="cambiarFoto"
-                    style={{
-                      color: "#F97316",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      marginTop: "4px",
-                    }}
+                    className="d-block mt-2"
+                    style={{ color: "#F97316", cursor: "pointer" }}
                   >
                     Cambiar foto
                   </label>
@@ -197,132 +199,81 @@ function PerfilUsuario() {
                     type="file"
                     accept="image/*"
                     style={{ display: "none" }}
-                    onChange={(e) => {
-                      if (e.target.files[0]) setImagenPerfil(e.target.files[0]);
-                    }}
+                    onChange={(e) => setImagenPerfil(e.target.files[0])}
                   />
                 </div>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="row g-3 mt-4 ms-4"
-                >
+
+                <form onSubmit={handleSubmit(onSubmit)}>
                   {/* Nombre Completo */}
-                  <div className="col-11">
+                  <div className="mb-3">
                     <label className="form-label">Nombre Completo</label>
                     <input
                       type="text"
-                      className={`form-control ${
-                        errors.nombre ? "is-invalid" : ""
-                      }`}
-                      {...register("nombre", {
-                        required: "El nombre es requerido",
-                        minLength: {
-                          value: 3,
-                          message: "El nombre debe tener al menos 3 caracteres",
-                        },
-                      })}
+                      className={`form-control ${errors.nombre ? "is-invalid" : ""}`}
+                      {...register("nombre", { required: "El nombre es requerido" })}
                     />
-                    {errors.nombre && (
-                      <div className="invalid-feedback">
-                        {errors.nombre.message}
-                      </div>
-                    )}
+                    {errors.nombre && <div className="invalid-feedback">{errors.nombre.message}</div>}
                   </div>
 
                   {/* Email */}
-                  <div className="col-11">
+                  <div className="mb-3">
                     <label className="form-label">Email</label>
                     <input
                       type="email"
-                      className={`form-control ${
-                        errors.email ? "is-invalid" : ""
-                      }`}
-                      {...register("email", {
-                        required: "El email es requerido",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Email inválido",
-                        },
-                      })}
+                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                      {...register("email", { required: "El email es requerido" })}
                     />
-                    {errors.email && (
-                      <div className="invalid-feedback">
-                        {errors.email.message}
-                      </div>
-                    )}
+                    {errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
                   </div>
 
                   {/* Teléfono */}
-                  <div className="col-11">
+                  <div className="mb-3">
                     <label className="form-label">Teléfono</label>
                     <input
                       type="tel"
-                      className={`form-control ${
-                        errors.telefono ? "is-invalid" : ""
-                      }`}
-                      {...register("telefono", {
-                        pattern: {
-                          value: /^[0-9]{10}$/,
-                          message: "Teléfono inválido (10 dígitos)",
-                        },
-                      })}
+                      className={`form-control ${errors.telefono ? "is-invalid" : ""}`}
+                      {...register("telefono")}
                     />
-                    {errors.telefono && (
-                      <div className="invalid-feedback">
-                        {errors.telefono.message}
-                      </div>
-                    )}
+                    {errors.telefono && <div className="invalid-feedback">{errors.telefono.message}</div>}
                   </div>
 
                   {/* Ciudad */}
-                  <div className="col-md-6">
+                  <div className="mb-3">
                     <label className="form-label">Ciudad</label>
                     <input
                       type="text"
-                      className={`form-control ${
-                        errors.ciudad ? "is-invalid" : ""
-                      }`}
-                      {...register("ciudad", {
-                        required: "La ciudad es requerida",
-                      })}
+                      className={`form-control ${errors.ciudad ? "is-invalid" : ""}`}
+                      {...register("ciudad")}
                     />
-                    {errors.ciudad && (
-                      <div className="invalid-feedback">
-                        {errors.ciudad.message}
-                      </div>
-                    )}
+                    {errors.ciudad && <div className="invalid-feedback">{errors.ciudad.message}</div>}
                   </div>
                 </form>
               </div>
             </div>
+          </div>
 
-            <div
-              style={{
-                height: "727px",
-                width: "694px",
-                backgroundColor: "#FFFFFF",
-                borderRadius: "8px",
-                boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-                transform: "translateY(-20px)",
-                marginTop: "2vh",
-                marginBottom: "25vh",
-                padding: "24px",
-              }}
-            >
-              <div className=" d-flex justify-content-between align-items-center ">
-                <h3 className="fs-5 mb-4">Mis Mascotas</h3>
-                <ModalMascostas />
-              </div>
-              <div>
-                <p className="mt-4 text-muted">
-                  Aún no has agregado ninguna mascota. Haz clic en "Agregar
-                  Mascota" para comenzar.
-                </p>
-                <div style={{ display: "flex", justifyContent: "center", marginTop: "50px" }}>
-                  
-                </div>
-              </div>
+          {/* --- Columna de Mascotas --- */}
+          <div className="col-lg-8">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h5 className="mb-0">Mis Mascotas</h5>
+              <ModalMascostas actualizarMascotas={fetchMascotas} />
             </div>
+
+            {mascotas.length === 0 ? (
+              <p className="text-muted text-center mt-5">
+                Aún no has agregado ninguna mascota.
+              </p>
+            ) : (
+              <div className="row">
+                {mascotas.map((pet) => (
+                  <PetCard
+                    key={pet.id}
+                    pet={pet}
+                    onPetUpdate={handlePetUpdate} // <-- Pasamos la función aquí
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

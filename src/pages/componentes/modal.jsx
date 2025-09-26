@@ -1,13 +1,11 @@
 import { useState } from "react";
-import Button from "react-bootstrap/Button";
-import FormLabel from "react-bootstrap/esm/FormLabel";
-import FormSelect from "react-bootstrap/esm/FormSelect";
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
+import { Modal, Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { toast } from "react-toastify";
+import { FaPaw } from 'react-icons/fa';
+// Importa tu archivo de estilos si lo estás usando
+// import './ModalStyles.css'; 
 
-function ModalMascostas() {
-  // ✅ Declarar los estados
+function ModalMascostas({ actualizarMascotas }) {
   const [nombre, setNombre] = useState("");
   const [raza, setRaza] = useState("");
   const [edad, setEdad] = useState("");
@@ -22,126 +20,138 @@ function ModalMascostas() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("nombre", nombre);
-    formData.append("raza", raza);
-    formData.append("edad", edad);
-    formData.append("peso", peso);
-    formData.append("tipo", tipo);
-    if (imagen) formData.append("imagen", imagen);
-
+    
     try {
-      const res = await fetch("http://localhost:5000/registrar-mascota", {
-        method: "POST",
-        body: formData,
-      });
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error("No hay sesión activa");
+            return;
+        }
 
-      const result = await res.json();
+        const formData = new FormData();
+        formData.append("nombre", nombre);
+        formData.append("tipo", tipo);
+        formData.append("raza", raza);
+        formData.append("edad", edad);
+        formData.append("peso", peso);
+        if (imagen) {
+            formData.append("imagen", imagen);
+        }
 
-      if (res.ok) {
-        toast.success("¡Registro exitoso!", { position: "top-right", autoClose: 2000 });
+        const res = await fetch("http://localhost:5000/api/mascotas", {
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Error al agregar mascota');
+        }
+
+        const data = await res.json();
+        toast.success('Mascota agregada exitosamente');
         handleClose();
-        // Limpiar campos
-        setNombre("");
-        setRaza("");
-        setEdad("");
-        setPeso("");
-        setTipo("");
-        setImagen(null);
-      } else {
-        toast.error(result.message || "Error al registrar");
-      }
+        actualizarMascotas();
+
     } catch (error) {
-      toast.error("Error de conexión con el servidor");
-      console.error(error);
+        console.error("Error:", error);
+        toast.error(error.message || "Error al conectar con el servidor");
     }
   };
 
   return (
     <>
-      <button
-        className="btn"
-        onClick={handleShow}
-        style={{
-          backgroundColor: "#F97316",
-          color: "white",
-          padding: "8px 20px",
-        }}
-      >
+      <Button onClick={handleShow} className="btn-agregar-mascota" style={{ backgroundColor: "#F97316", borderColor: "#F97316" }}> 
         Agregar Mascota
-      </button>
+      </Button>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Agregar una nueva Mascota</Modal.Title>
+          <Modal.Title>
+            <FaPaw style={{ marginRight: '10px' }} />
+            Agregar una Nueva Mascota
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={onSubmit}>
-            <Form.Group className="mb-3" controlId="formFile">
-              <FormLabel>Foto de la Mascota</FormLabel>
+            <Row className="mb-3">
+              <Form.Group as={Col} md="6" controlId="formGridNombre">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Ej: Rocky"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group as={Col} md="6" controlId="formGridRaza">
+                <Form.Label>Raza</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={raza}
+                  onChange={(e) => setRaza(e.target.value)}
+                  placeholder="Ej: Golden Retriever"
+                  required
+                />
+              </Form.Group>
+            </Row>
+
+            <Row className="mb-3">
+              <Form.Group as={Col} xs="6" md="4" controlId="formGridEdad">
+                <Form.Label>Edad (años)</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={edad}
+                  onChange={(e) => setEdad(e.target.value)}
+                  placeholder="Ej: 2"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group as={Col} xs="6" md="4" controlId="formGridPeso">
+                <Form.Label>Peso (kg)</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.1"
+                  value={peso}
+                  onChange={(e) => setPeso(e.target.value)}
+                  placeholder="Ej: 15.5"
+                  required
+                />
+              </Form.Group>
+              
+              <Form.Group as={Col} md="4" controlId="formGridSexo">
+                <Form.Label>Sexo</Form.Label>
+                <Form.Select
+                  value={tipo}
+                  onChange={(e) => setTipo(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Seleccione...</option>
+                  <option value="Macho">Macho</option>
+                  <option value="Hembra">Hembra</option>
+                </Form.Select>
+              </Form.Group>
+            </Row>
+
+            <Form.Group controlId="formFile" className="mb-3">
+              <Form.Label>Foto de la Mascota</Form.Label>
               <Form.Control
                 type="file"
-                onChange={(e) => setImagen(e.target.files[0])} // 📌 capturar archivo
+                onChange={(e) => setImagen(e.target.files[0])}
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <FormLabel>Nombre de la Mascota</FormLabel>
-              <Form.Control
-                type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ingresa el nombre de tu mascota"
-              />
-
-              <FormLabel className="mt-2">Raza de la Mascota</FormLabel>
-              <Form.Control
-                type="text"
-                value={raza}
-                onChange={(e) => setRaza(e.target.value)}
-                placeholder="Ingrese la raza de su mascota"
-              />
-
-              <FormLabel className="mt-2">Edad de la Mascota</FormLabel>
-              <Form.Control
-                type="number"
-                value={edad}
-                onChange={(e) => setEdad(e.target.value)}
-                placeholder="Ingrese la edad de su mascota"
-              />
-
-              <FormLabel className="mt-2">Peso de la Mascota</FormLabel>
-              <Form.Control
-                type="number"
-                value={peso}
-                onChange={(e) => setPeso(e.target.value)}
-                placeholder="Ingrese el peso de su mascota"
-              />
-
-              <FormLabel className="mt-2">Tipo de Mascota</FormLabel>
-              <Form.Select
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value)}
-              >
-                <option value="">Seleccione el tipo de mascota</option>
-                <option value="Macho">Macho</option>
-                <option value="Hembra">Hembra</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Modal.Footer>
+            <Modal.Footer className="mt-4">
               <Button variant="secondary" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                className="btn"
-                style={{
-                  backgroundColor: "#F97316",
-                  color: "white",
-                }}
-              >
+              <Button type="submit" className="btn-guardar-cambios" style={{ backgroundColor: "#F97316", borderColor: "#F97316" }}>
                 Guardar Cambios
               </Button>
             </Modal.Footer>
