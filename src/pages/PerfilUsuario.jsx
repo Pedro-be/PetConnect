@@ -45,7 +45,6 @@ function PerfilUsuario() {
         toast.error("No se pudieron cargar los datos del perfil.");
       }
     } catch (error) {
-      console.error("Error al cargar datos del usuario:", error);
       toast.error("Error de conexión al cargar el perfil.");
     }
   }, [setValue]);
@@ -67,7 +66,6 @@ function PerfilUsuario() {
         toast.error("No se pudieron cargar las mascotas.");
       }
     } catch (error) {
-      console.error("Error al obtener mascotas:", error);
       toast.error("Error de conexión al cargar mascotas.");
     }
   }, []);
@@ -125,13 +123,13 @@ function PerfilUsuario() {
 
       if (res.ok) {
         toast.success("Perfil actualizado exitosamente");
+        navigate("/Header");
         // Vuelve a cargar los datos para reflejar los cambios (como la nueva foto)
         await cargarDatosUsuario();
       } else {
         toast.error(resultado.message || "Error al actualizar el perfil");
       }
     } catch (error) {
-      console.error("Error:", error);
       toast.error("Error al conectar con el servidor");
     }
   };
@@ -149,10 +147,7 @@ function PerfilUsuario() {
             </p>
           </div>
           <div>
-            <button
-              className="btn btn-light me-2"
-              onClick={() => navigate(-1)}
-            >
+            <button className="btn btn-light me-2" onClick={() => navigate(-1)}>
               Cancelar
             </button>
             <button
@@ -169,7 +164,7 @@ function PerfilUsuario() {
         <div className="row">
           {/* --- Columna de Información del Usuario --- */}
           <div className="col-lg-4">
-            <div className="card">
+            <div className="shadow p-3 mb-5 bg-body rounded">
               <div className="card-body">
                 <h5 className="card-title mb-4">Tu Información</h5>
                 <div className="text-center mb-4">
@@ -182,8 +177,8 @@ function PerfilUsuario() {
                     alt="Foto de perfil"
                     className="rounded-circle"
                     style={{
-                      height: "128px",
-                      width: "128px",
+                      height: "140px",
+                      width: "146px",
                       objectFit: "cover",
                     }}
                   />
@@ -209,10 +204,18 @@ function PerfilUsuario() {
                     <label className="form-label">Nombre Completo</label>
                     <input
                       type="text"
-                      className={`form-control ${errors.nombre ? "is-invalid" : ""}`}
-                      {...register("nombre", { required: "El nombre es requerido" })}
+                      className={`form-control ${
+                        errors.nombre ? "is-invalid" : ""
+                      }`}
+                      {...register("nombre", {
+                        required: "El nombre es requerido",
+                      })}
                     />
-                    {errors.nombre && <div className="invalid-feedback">{errors.nombre.message}</div>}
+                    {errors.nombre && (
+                      <div className="invalid-feedback">
+                        {errors.nombre.message}
+                      </div>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -220,10 +223,18 @@ function PerfilUsuario() {
                     <label className="form-label">Email</label>
                     <input
                       type="email"
-                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                      {...register("email", { required: "El email es requerido" })}
+                      className={`form-control ${
+                        errors.email ? "is-invalid" : ""
+                      }`}
+                      {...register("email", {
+                        required: "El email es requerido",
+                      })}
                     />
-                    {errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
+                    {errors.email && (
+                      <div className="invalid-feedback">
+                        {errors.email.message}
+                      </div>
+                    )}
                   </div>
 
                   {/* Teléfono */}
@@ -231,10 +242,16 @@ function PerfilUsuario() {
                     <label className="form-label">Teléfono</label>
                     <input
                       type="tel"
-                      className={`form-control ${errors.telefono ? "is-invalid" : ""}`}
+                      className={`form-control ${
+                        errors.telefono ? "is-invalid" : ""
+                      }`}
                       {...register("telefono")}
                     />
-                    {errors.telefono && <div className="invalid-feedback">{errors.telefono.message}</div>}
+                    {errors.telefono && (
+                      <div className="invalid-feedback">
+                        {errors.telefono.message}
+                      </div>
+                    )}
                   </div>
 
                   {/* Ciudad */}
@@ -242,10 +259,16 @@ function PerfilUsuario() {
                     <label className="form-label">Ciudad</label>
                     <input
                       type="text"
-                      className={`form-control ${errors.ciudad ? "is-invalid" : ""}`}
+                      className={`form-control ${
+                        errors.ciudad ? "is-invalid" : ""
+                      }`}
                       {...register("ciudad")}
                     />
-                    {errors.ciudad && <div className="invalid-feedback">{errors.ciudad.message}</div>}
+                    {errors.ciudad && (
+                      <div className="invalid-feedback">
+                        {errors.ciudad.message}
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>

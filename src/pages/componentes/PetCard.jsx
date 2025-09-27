@@ -80,9 +80,9 @@ const PetCard = ({ pet, onPetUpdate }) => {
   const displayImage = imagePreview || (formData.imagen ? `${import.meta.env.VITE_API_URL}${formData.imagen}` : '/petconnect.webp');
 
   return (
-    <div className="col-12 col-md-6 col-lg-4 mb-4">
+    <div className="col-12 col-md-6 col-lg-4 mb-4 ">
       <Form onSubmit={handleSave} className="card h-100 shadow-sm border-0 editable-pet-card">
-        <div className="card-body">
+        <div className="card-body shadow bg-body rounded">
           <div className="pet-header">
             {/* Contenedor de la imagen y botón de cambio */}
             <div className="image-container">
