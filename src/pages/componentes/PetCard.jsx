@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
-import { FaSave, FaImage } from 'react-icons/fa';
+import { FaSave, FaImage, FaTrashAlt  } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import './PetCardEditable.css'; // Crearemos este archivo de estilos
-
-const PetCard = ({ pet, onPetUpdate }) => {
+const PetCard = ({ pet, onPetUpdate, onPetDelete }) => {
   // Estado para manejar los datos del formulario
   const [formData, setFormData] = useState({ ...pet });
   const [newImage, setNewImage] = useState(null); // Para el archivo de la nueva imagen
@@ -24,6 +23,35 @@ const PetCard = ({ pet, onPetUpdate }) => {
       ...prevData,
       [name]: value,
     }));
+  };
+
+  const handleDelete = async () => {
+    // Pedimos confirmación al usuario para evitar borrados accidentales
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar a ${formData.nombre}?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/mascotas/${pet.id}`, {
+        method: 'DELETE', // <-- Usamos el método DELETE
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar la mascota');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+      // Llama a la función del padre para quitar la mascota de la lista en la UI
+      onPetDelete(pet.id);
+
+    } catch (error) {
+      toast.error(error.message || 'Error al conectar con el servidor.');
+    }
   };
 
   // Manejador para el cambio de imagen
@@ -82,6 +110,14 @@ const PetCard = ({ pet, onPetUpdate }) => {
   return (
     <div className="col-12 col-md-6 col-lg-4 mb-4 ">
       <Form onSubmit={handleSave} className="card h-100 shadow-sm border-0 editable-pet-card">
+        <Button 
+          variant="danger" 
+          className="btn-delete-pet"
+          onClick={handleDelete}
+          type="button" // Importante para no enviar el formulario
+        >
+          <FaTrashAlt />
+        </Button>
         <div className="card-body shadow bg-body rounded">
           <div className="pet-header">
             {/* Contenedor de la imagen y botón de cambio */}

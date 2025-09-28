@@ -53,7 +53,6 @@ router.put('/actualizar', verificarToken, upload.single('imagen'), async (req, r
             res.status(404).json({ message: 'Usuario no encontrado' });
         }
     } catch (error) {
-        console.error('Error al actualizar perfil:', error);
         res.status(500).json({ message: 'Error al actualizar el perfil' });
     }
 });

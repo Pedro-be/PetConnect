@@ -163,7 +163,7 @@ function Register() {
                 </label>
                 <input
                   type="email"
-                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                  className={`form-control rounded-3 ${errors.email ? 'is-invalid' : ''}`}
                   {...register("email", {
                     required: "El email es requerido",
                     pattern: {
@@ -172,7 +172,6 @@ function Register() {
                     },
                     validate: validateEmail
                   })}
-                  className="form-control rounded-3"
                   id="email"
                   placeholder="tu@email.com"
                 />

@@ -20,6 +20,14 @@ function PerfilUsuario() {
   const [profileImageUrl, setProfileImageUrl] = useState("/petconnect.webp");
   const [mascotas, setMascotas] = useState([]);
 
+  // ✅ NUEVA FUNCIÓN PARA ACTUALIZAR LA UI AL ELIMINAR
+  const handlePetDelete = (idMascotaEliminada) => {
+    // Filtramos la lista de mascotas, quedándonos solo con las que NO tienen ese ID
+    setMascotas(mascotasPrevias =>
+      mascotasPrevias.filter(pet => pet.id !== idMascotaEliminada)
+    );
+  };
+
   // ✅ Función para cargar los datos del usuario, movida fuera de useEffect
   const cargarDatosUsuario = useCallback(async () => {
     try {
@@ -293,6 +301,7 @@ function PerfilUsuario() {
                     key={pet.id}
                     pet={pet}
                     onPetUpdate={handlePetUpdate} // <-- Pasamos la función aquí
+                    onPetDelete={handlePetDelete}
                   />
                 ))}
               </div>

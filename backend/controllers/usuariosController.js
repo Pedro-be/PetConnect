@@ -30,7 +30,6 @@ const registrarUsuario = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error al registrar usuario:', error);
         res.status(500).json({ message: 'Error al registrar usuario' });
     }
 };
@@ -53,7 +52,7 @@ const loginUsuario = async (req, res) => {
     const token = jwt.sign(
       { id: usuario.id }, 
       'clave_secreta', 
-      { expiresIn: '1h' }
+      { expiresIn: '8h' }
     );
 
     res.json({ 
@@ -61,7 +60,6 @@ const loginUsuario = async (req, res) => {
       message: "Login exitoso"
     });
   } catch (error) {
-    console.error('Error en login:', error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 };
@@ -85,7 +83,6 @@ const verificarEmail = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error al verificar email:', error);
         res.status(500).json({ 
             exists: false,
             message: 'Error al verificar email' 
@@ -112,7 +109,6 @@ const obtenerPerfil = async (req, res) => {
         // Enviamos el primer usuario encontrado
         res.json(usuarios[0]);
     } catch (error) {
-        console.error('Error al obtener perfil:', error);
         res.status(500).json({ message: 'Error al obtener perfil' });
     }
 };

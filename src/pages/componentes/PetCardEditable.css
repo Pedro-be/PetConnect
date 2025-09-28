@@ -98,3 +98,24 @@
 .btn-save-pet:hover {
   background-color: #EA580C; /* Un tono más oscuro */
 }
+
+/* Dentro de PetCardEditable.css */
+
+.btn-delete-pet {
+  position: absolute;
+  top: 10px;
+  right: 10px; /* Lo posiciona en la esquina superior derecha */
+  z-index: 10;  /* Asegura que esté por encima de otros elementos */
+  padding: 5px 8px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  line-height: 1;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-delete-pet:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}

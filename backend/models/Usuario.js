@@ -17,7 +17,6 @@ class Usuario {
             await connection.end();
             return rows[0];
         } catch (error) {
-            console.error('Error en findOne:', error);
             await connection.end();
             throw error;
         }

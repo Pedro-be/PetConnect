@@ -90,6 +90,35 @@ const actualizarMascota = async (req, res) => {
   }
 };
 
+// En tu archivo de controlador (ej: mascotasController.js)
+
+const eliminarMascota = async (req, res) => {
+  try {
+    const { id } = req.params; // ID de la mascota desde la URL
+    const usuario_id = req.usuario.id; // ID del usuario desde el token
+
+    // Verificamos que la mascota exista y pertenezca al usuario antes de borrarla
+    const [result] = await db.query(
+      'DELETE FROM mascotas WHERE id = ? AND usuario_id = ?',
+      [id, usuario_id]
+    );
+
+    // `affectedRows` nos dice si se borró alguna fila.
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Mascota no encontrada o no tienes permiso para eliminarla" });
+    }
+
+    res.json({ message: "Mascota eliminada exitosamente" });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al eliminar la mascota",
+      error: error.message,
+    });
+  }
+};
+
+
 // --- 4. Obtener perfil de usuario (lo mantendremos aquí por ahora) ---
 const obtenerPerfil = async (req, res) => {
   try {
@@ -113,5 +142,6 @@ module.exports = {
   agregarMascota,
   obtenerMascotas,
   actualizarMascota,
+  eliminarMascota,
   obtenerPerfil
 };

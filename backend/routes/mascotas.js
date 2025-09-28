@@ -3,17 +3,18 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 
-// ✅ #1: Importamos el middleware UNA SOLA VEZ y le damos un nombre.
+// 1. Importamos el middleware de autenticación UNA SOLA VEZ.
 const verificarToken = require('../middleware/auth'); 
 
-// ✅ #2: Importamos TODAS las funciones que vamos a necesitar del controlador.
+// 2. Importamos TODAS las funciones que vamos a usar, incluyendo la de eliminar.
 const { 
     obtenerMascotas, 
     agregarMascota, 
-    actualizarMascota // <-- Faltaba esta función
+    actualizarMascota,
+    eliminarMascota // <-- Se añade la función que faltaba
 } = require('../controllers/mascotasController');
 
-// ✅ #3: Creamos la configuración y la variable 'upload' ANTES de usarla.
+// 3. Creamos la configuración de 'upload' antes de definir las rutas.
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
@@ -24,20 +25,27 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// --- AHORA DEFINIMOS TODAS LAS RUTAS ---
+// --- DEFINICIÓN DE RUTAS ---
 
-// Obtener todas las mascotas del usuario
+// Obtener todas las mascotas del usuario (GET)
 router.get('/', verificarToken, obtenerMascotas);
 
-// Agregar una nueva mascota
+// Agregar una nueva mascota (POST)
 router.post('/', verificarToken, upload.single('imagen'), agregarMascota);
 
-// Actualizar una mascota existente
+// Actualizar una mascota existente (PUT)
 router.put(
   '/:id', 
-  verificarToken, // Usamos el mismo nombre de middleware para consistencia
+  verificarToken,
   upload.single('imagen'), 
   actualizarMascota
+);
+
+// Eliminar una mascota (DELETE)
+router.delete(
+  '/:id',
+  verificarToken,
+  eliminarMascota // <-- 4. Usamos la función directamente, sin "mascotasController."
 );
 
 module.exports = router;

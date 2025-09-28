@@ -33,9 +33,12 @@ app.use('/api/mascotas', require('./routes/mascotas'));
 const imagenesRoutes = require("./routes/imagenes");
 app.use("/api/imagenes", imagenesRoutes);
 
+const postsRoutes = require('./routes/posts');
+app.post("/api/posts", upload.single('file'), postsRoutes); 
+app.use("/api/posts", postsRoutes);
+app.post('/api/posts', upload.single('file'), postsRoutes);
 
 
-// TODO: agregar mascotas e imágenes de la misma manera
 
 app.listen(5000, () => {
   console.log("🚀 Servidor corriendo en http://localhost:5000");
