@@ -1,21 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Tu conexión a la base de datos (pool de mysql2)
-const verificarToken = require('../middleware/auth'); // ✅ 1. Importa tu middleware de autenticación
+const db = require('../db');
+const verificarToken = require('../middleware/auth');
 
 // --- OBTENER TODAS LAS PUBLICACIONES (EL FEED PRINCIPAL) ---
 // GET /api/posts
 router.get('/', verificarToken, async (req, res) => {
     const currentUserId = req.usuario.id;
     try {
-        // ✅ 3. Esta es la nueva consulta SQL
         const query = `
             SELECT
                 p.*,
                 u.nombre AS autor_nombre,
                 u.imagen AS autor_foto_url,
                 (SELECT COUNT(*) FROM likes WHERE publicacion_id = p.id) AS likes_count,
-                -- Esta subconsulta devuelve TRUE si el usuario actual ha dado like, y FALSE si no.
+                -- ESTA LÍNEA ES LA QUE PROBABLEMENTE TE FALTA --
+                (SELECT COUNT(*) FROM comentarios WHERE publicacion_id = p.id) AS comentarios_count,
                 EXISTS(SELECT 1 FROM likes WHERE publicacion_id = p.id AND usuario_id = ?) AS liked_by_user
             FROM
                 publicaciones p
@@ -37,11 +37,78 @@ router.get('/', verificarToken, async (req, res) => {
     }
 });
 
+
+// --- OBTENER SOLO LAS PUBLICACIONES DEL USUARIO AUTENTICADO ---
+// GET /api/posts/mis-publicaciones
+router.get('/mis-publicaciones', verificarToken, async (req, res) => {
+    const usuarioId = req.usuario.id; // Obtenemos el ID del token
+
+    try {
+        // La consulta es similar a la del feed, pero con un WHERE para filtrar por usuario
+        const query = `
+            SELECT
+                p.*,
+                u.nombre AS autor_nombre,
+                u.imagen AS autor_foto_url,
+                (SELECT COUNT(*) FROM likes WHERE publicacion_id = p.id) AS likes_count,
+                (SELECT COUNT(*) FROM comentarios WHERE publicacion_id = p.id) AS comentarios_count,
+                EXISTS(SELECT 1 FROM likes WHERE publicacion_id = p.id AND usuario_id = ?) AS liked_by_user
+            FROM
+                publicaciones p
+            JOIN
+                usuarios u ON p.usuario_id = u.id
+            WHERE
+                p.usuario_id = ? 
+            ORDER BY
+                p.fecha_creacion DESC;
+        `;
+        // Pasamos el ID del usuario dos veces a la consulta
+        const [posts] = await db.query(query, [usuarioId, usuarioId]);
+
+        const postsWithBooleanLikes = posts.map(post => ({
+            ...post,
+            liked_by_user: !!post.liked_by_user
+        }));
+
+        res.json(postsWithBooleanLikes);
+    } catch (error) {
+        console.error('Error obteniendo mis publicaciones:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+// --- ELIMINAR UNA PUBLICACIÓN ---
+// DELETE /api/posts/:postId
+router.delete('/:postId', verificarToken, async (req, res) => {
+    const { postId } = req.params;
+    const usuarioId = req.usuario.id;
+
+    try {
+        // Primero, verificamos que la publicación exista y pertenezca al usuario
+        const [rows] = await db.query('SELECT usuario_id FROM publicaciones WHERE id = ?', [postId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Publicación no encontrada.' });
+        }
+
+        // ¡Paso de seguridad! Asegurarnos de que el usuario que borra es el dueño
+        if (rows[0].usuario_id !== usuarioId) {
+            return res.status(403).json({ error: 'No tienes permiso para eliminar esta publicación.' });
+        }
+
+        // Si todo está bien, la eliminamos
+        await db.query('DELETE FROM publicaciones WHERE id = ?', [postId]);
+
+        res.status(200).json({ message: 'Publicación eliminada correctamente.' });
+    } catch (error) {
+        console.error('Error al eliminar la publicación:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
 // --- CREAR UNA NUEVA PUBLICACIÓN ---
 // POST /api/posts
-// NOTA: El middleware de multer se debe aplicar a esta ruta en tu archivo server.js
 router.post('/', async (req, res) => {
-    // Los datos de texto vienen en req.body
     const { usuario_id, contenido } = req.body;
     
     // La información del archivo subido por multer está en req.file
@@ -64,7 +131,6 @@ router.post('/', async (req, res) => {
             newPostId: result.insertId 
         });
     } catch (error) {
-        console.error('Error al crear la publicación:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
@@ -84,7 +150,6 @@ router.post('/:postId/comentarios', async (req, res) => {
         await db.query(query, [postId, usuario_id, contenido]);
         res.status(201).json({ message: 'Comentario creado exitosamente.' });
     } catch (error) {
-        console.error('Error al crear comentario:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
@@ -95,22 +160,14 @@ router.post('/:postId/like', async (req, res) => {
     const { postId } = req.params;
     const { userId } = req.body;
 
-    // ✅ --- AÑADE ESTAS LÍNEAS PARA DEPURAR ---
-    console.log('--- INTENTO DE DAR LIKE ---');
-    console.log('ID de la Publicación:', postId);
-    console.log('ID del Usuario recibido en el body:', userId);
-    // -----------------------------------------
-
     try {
         const query = 'INSERT INTO likes (usuario_id, publicacion_id) VALUES (?, ?)';
         await db.query(query, [userId, postId]);
         res.status(201).json({ message: 'Like añadido correctamente.' });
     } catch (error) {
-        console.error('Error de base de datos al dar like:', error);
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'Ya le has dado like a esta publicación.' });
         }
-        console.error('Error al añadir like:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
@@ -130,7 +187,29 @@ router.delete('/:postId/like', async (req, res) => {
         }
         res.status(200).json({ message: 'Like eliminado correctamente.' });
     } catch (error) {
-        console.error('Error al eliminar like:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+// --- OBTENER LOS COMENTARIOS DE UNA PUBLICACIÓN ---
+// GET /api/posts/:postId/comentarios
+router.get('/:postId/comentarios', async (req, res) => {
+    const { postId } = req.params;
+    try {
+        //Añadimos un JOIN para traer la imagen del autor del comentario
+        const query = `
+            SELECT 
+                c.*,
+                u.nombre AS autor_nombre,
+                u.imagen AS autor_foto_url 
+            FROM comentarios c
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE c.publicacion_id = ?
+            ORDER BY c.fecha_creacion ASC;
+        `;
+        const [comments] = await db.query(query, [postId]);
+        res.json(comments);
+    } catch (error) {
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });

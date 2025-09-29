@@ -1,0 +1,136 @@
+/* src/pages/componentes/Citas.css */
+
+.citas-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 2.5rem;
+    margin-left: 250px; /* Asume que el sidebar tiene un ancho de 250px */
+}
+
+/* --- Estilos Mejorados del Encabezado --- */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+.page-title {
+    font-weight: 700;
+    color: #343a40;
+    margin: 0;
+}
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1rem;
+    margin: 0;
+}
+.btn-with-icon {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    background-color: #F97316;
+    border: none;
+}
+.btn-with-icon:hover {
+    background-color: #ea580c;
+}
+
+/* --- Estilos Mejorados para el Calendario --- */
+.calendar-container {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+/* Sobrescribir estilos de react-big-calendar */
+.rbc-toolbar {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+.rbc-toolbar button {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.rbc-toolbar button:hover, .rbc-toolbar button:focus {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+}
+.rbc-btn-group .rbc-active {
+    background-color: #F97316 !important;
+    color: white !important;
+    border-color: #F97316 !important;
+}
+
+/* --- Estilos para los Eventos Personalizados --- */
+.cita-evento {
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.8rem;
+    height: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 4px solid rgba(0,0,0,0.3);
+}
+
+/* Colores según el tipo de cita */
+.cita-evento.tipo-veterinario { background-color: #3498db; }
+.cita-evento.tipo-peluquería { background-color: #9b59b6; }
+.cita-evento.tipo-vacunación { background-color: #e74c3c; }
+.cita-evento.tipo-paseo { background-color: #2ecc71; }
+.cita-evento.tipo-otro { background-color: #7f8c8d; }
+
+
+/* Estilos para el CitaModal */
+
+.cita-modal .modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+.cita-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.cita-modal .modal-title {
+    color: #343a40;
+}
+
+.cita-modal .form-label {
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+}
+
+.cita-modal .form-control,
+.cita-modal .form-select {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cita-modal .form-control:focus,
+.cita-modal .form-select:focus {
+    border-color: #F97316;
+    box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+}
+
+.cita-modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}

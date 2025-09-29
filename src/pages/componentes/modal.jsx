@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Modal, Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { toast } from "react-toastify";
 import { FaPaw } from 'react-icons/fa';
-// Importa tu archivo de estilos si lo estás usando
-// import './ModalStyles.css'; 
 
 function ModalMascostas({ actualizarMascotas }) {
   const [nombre, setNombre] = useState("");

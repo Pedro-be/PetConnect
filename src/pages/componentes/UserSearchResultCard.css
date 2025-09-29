@@ -1,0 +1,8 @@
+.user-card-result { display: flex; align-items: center; padding: 1rem; background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1rem; }
+.user-card-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-right: 1.5rem; }
+.user-card-info { flex-grow: 1; }
+.user-card-name { font-weight: 600; margin-bottom: 0.25rem; }
+.user-card-city { margin-bottom: 0.5rem; }
+.user-card-stats { display: flex; gap: 1.5rem; color: #6c757d; font-size: 0.9rem; }
+.user-card-stats span { display: flex; align-items: center; gap: 0.5rem; }
+.user-card-button { margin-left: auto; }

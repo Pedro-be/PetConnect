@@ -16,7 +16,7 @@ db.getConnection((err, connection) => {
     return;
   }
   console.log("✅ Conectado a MySQL con pool");
-  connection.release(); // Liberamos la conexión al pool
+  connection.release();
 });
 
 module.exports = db;

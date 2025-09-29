@@ -96,10 +96,10 @@ function Login() {
           height: "80%",
           backgroundColor: "#FFFFFF",
           borderRadius: "8px",
-          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)", // Increased shadow for elevation
-          transform: "translateY(-20px)", // Slightly elevate the box
-          marginTop: "25vh", // Add 25% margin from the top
-          marginBottom: "25vh", // Add 25% margin from the bottom
+          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)", 
+          transform: "translateY(-20px)", 
+          marginTop: "25vh", 
+          marginBottom: "25vh", 
         }}
       >
         <div className="d-flex w-100 h-100">
@@ -107,7 +107,7 @@ function Login() {
             className="d-flex flex-column justify-content-center align-items-center"
             style={{ width: "50%", padding: "20px" }}
           >
-            {/* Add your login form or inputs here */}
+            
             <img
               src="/petconnect.webp"
               alt="PetConnect"
@@ -188,7 +188,6 @@ function Login() {
             </form>
           </div>
 
-          {/* Right Side: Image and Text Section */}
           <div
             className="d-flex flex-column justify-content-center align-items-center"
             style={{

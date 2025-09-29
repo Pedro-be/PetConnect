@@ -20,7 +20,7 @@ function PerfilUsuario() {
   const [profileImageUrl, setProfileImageUrl] = useState("/petconnect.webp");
   const [mascotas, setMascotas] = useState([]);
 
-  // ✅ NUEVA FUNCIÓN PARA ACTUALIZAR LA UI AL ELIMINAR
+  // NUEVA FUNCIÓN PARA ACTUALIZAR LA UI AL ELIMINAR
   const handlePetDelete = (idMascotaEliminada) => {
     // Filtramos la lista de mascotas, quedándonos solo con las que NO tienen ese ID
     setMascotas(mascotasPrevias =>
@@ -28,7 +28,7 @@ function PerfilUsuario() {
     );
   };
 
-  // ✅ Función para cargar los datos del usuario, movida fuera de useEffect
+  //Función para cargar los datos del usuario, movida fuera de useEffect
   const cargarDatosUsuario = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -78,7 +78,7 @@ function PerfilUsuario() {
     }
   }, []);
 
-  // ✅ Función para actualizar la UI de mascotas, movida fuera de useEffect
+  // Función para actualizar la UI de mascotas, movida fuera de useEffect
   const handlePetUpdate = useCallback((mascotasActualizadas) => {
     setMascotas((mascotasPrevias) =>
       mascotasPrevias.map((pet) =>
@@ -155,7 +155,7 @@ function PerfilUsuario() {
             </p>
           </div>
           <div>
-            <button className="btn btn-light me-2" onClick={() => navigate(-1)}>
+            <button className="btn btn-light me-2" onClick={() => navigate('/Header')}>
               Cancelar
             </button>
             <button

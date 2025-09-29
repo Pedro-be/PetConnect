@@ -2,16 +2,16 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const db = require("../db"); // Ajusta según cómo exportes tu conexión
+const db = require("../db");
 
-// Configuración de Multer para subir imágenes (esta parte está perfecta)
+// Configuración de Multer para subir imágenes
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
 const upload = multer({ storage });
 
-// --- RUTA CORREGIDA ---
+
 // Subir imagen de perfil
 router.post("/perfil", upload.single("imagen"), (req, res) => {
   // Verificamos que se haya subido un archivo
@@ -21,7 +21,7 @@ router.post("/perfil", upload.single("imagen"), (req, res) => {
 
   const userId = req.body.userId; // Debe venir del frontend
   
-  // ✅ AQUÍ ESTÁ EL CAMBIO: Construimos la ruta completa para la URL
+  // Construimos la ruta completa para la URL
   const imagenPath = `/uploads/${req.file.filename}`;
 
   const sql = "UPDATE usuarios SET imagen = ? WHERE id = ?";
@@ -39,7 +39,7 @@ router.post("/perfil", upload.single("imagen"), (req, res) => {
 });
 
 // Obtener imagen de perfil de un usuario
-// ✅ ESTA RUTA NO NECESITA CAMBIOS. Ahora devolverá la ruta completa que guardamos.
+//Ahora devolverá la ruta completa que guardamos.
 router.get("/perfil/:id", (req, res) => {
   const userId = req.params.id;
   const sql = "SELECT imagen FROM usuarios WHERE id = ?";

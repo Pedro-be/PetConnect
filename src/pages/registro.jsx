@@ -15,39 +15,47 @@ function Register() {
 
   const navigate = useNavigate();
 
-  const onSubmit = async (data) => {
+const onSubmit = async (data) => {
     try {
-      // Si el email no existe, procedemos con el registro
-      const res = await fetch("http://localhost:5000/api/usuario/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: data.name, // Cambiado de name a nombre para coincidir con el backend
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        toast.success('¡Registro exitoso!', {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        const res = await fetch("http://localhost:5000/api/usuario/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nombre: data.name,
+                email: data.email,
+                password: data.password,
+            }),
         });
-        setTimeout(() => navigate("/login"), 2000); // Cambiado a /login en lugar de /Header
-      } else {
-        toast.error(result.message || "Error al registrar");
-      }
+
+        // 'result' contiene la respuesta del backend, incluyendo el token
+        const result = await res.json(); 
+
+        if (res.ok) {
+            toast.success('¡Registro exitoso!');
+            
+            const { token } = result;
+
+            if (token) {
+                // Guarda el token real en localStorage
+                localStorage.setItem('token', token);
+                
+                // Redirige usando el método de recarga completa para asegurar
+                // que la aplicación lea el nuevo token al cargar
+                setTimeout(() => {
+                    window.location.href = '/Header'; // O la ruta principal que uses
+                }, 2000);
+
+            } else {
+                toast.error("El servidor no devolvió un token. Intenta iniciar sesión.");
+            }
+
+        } else {
+            toast.error(result.message || "Error al registrar");
+        }
     } catch (error) {
-      console.error("Error al conectar con backend:", error);
-      toast.error("Error al conectar con el servidor");
+        toast.error("Error al conectar con el servidor");
     }
-  };
+};
 
   const validateEmail = async (email) => {
     try {
@@ -137,7 +145,6 @@ function Register() {
             </p>
 
             <form className="w-100 px-3 px-md-4" onSubmit={handleSubmit(onSubmit)}>
-              {/* Nombre */}
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
                   Nombre completo

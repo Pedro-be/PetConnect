@@ -1,13 +1,14 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const path = require("path");
-const multer = require("multer"); // Añadir esta línea
+const multer = require("multer");
 
 // Configuración de multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/') // asegúrate que esta carpeta existe
+        cb(null, 'uploads/')
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname))
@@ -37,6 +38,11 @@ const postsRoutes = require('./routes/posts');
 app.post("/api/posts", upload.single('file'), postsRoutes); 
 app.use("/api/posts", postsRoutes);
 app.post('/api/posts', upload.single('file'), postsRoutes);
+const citasRoutes = require('./routes/citas');
+app.use('/api/citas', citasRoutes);
+
+const searchRoutes = require('./routes/search'); // Importa
+app.use('/api/search', searchRoutes);
 
 
 

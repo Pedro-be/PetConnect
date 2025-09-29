@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { FaSave, FaImage, FaTrashAlt  } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import './PetCardEditable.css'; // Crearemos este archivo de estilos
+import './PetCardEditable.css';
 const PetCard = ({ pet, onPetUpdate, onPetDelete }) => {
-  // Estado para manejar los datos del formulario
   const [formData, setFormData] = useState({ ...pet });
   const [newImage, setNewImage] = useState(null); // Para el archivo de la nueva imagen
   const [imagePreview, setImagePreview] = useState(null); // Para la previsualización
@@ -114,7 +113,7 @@ const PetCard = ({ pet, onPetUpdate, onPetDelete }) => {
           variant="danger" 
           className="btn-delete-pet"
           onClick={handleDelete}
-          type="button" // Importante para no enviar el formulario
+          type="button"
         >
           <FaTrashAlt />
         </Button>

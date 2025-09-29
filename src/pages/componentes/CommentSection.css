@@ -1,0 +1,55 @@
+/* src/pages/componentes/CommentSection.css */
+
+.comment-form {
+    gap: 10px;
+}
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.comment-input {
+    border: none;
+    background-color: #f0f2f5;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+.comment-submit-btn {
+    text-decoration: none;
+    font-weight: bold;
+    padding-right: 0;
+}
+.comment-submit-btn:disabled {
+    opacity: 0.5;
+}
+
+.comment-list .comment {
+    gap: 10px;
+    align-items: flex-start;
+}
+.comment-body {
+    background-color: #f0f2f5;
+    padding: 8px 12px;
+    border-radius: 18px;
+    flex: 1;
+}
+.comment-author {
+    font-weight: bold;
+    color: #262626;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+.comment-author:hover {
+    text-decoration: underline;
+}
+.comment-text {
+    font-size: 0.9rem;
+}
+.comment-timestamp {
+    font-size: 0.75rem;
+}
+/* Estilo para el comentario temporal mientras se envía */
+.comment.optimistic {
+    opacity: 0.6;
+}

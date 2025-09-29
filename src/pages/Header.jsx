@@ -5,12 +5,22 @@ import Notificaciones from "./notificaciones.jsx";
 import Mensajes from "./mensajes.jsx";
 import Usuario from "./Usuario.jsx";
 import CrearPublicacion from './componentes/CrearPublicacion.jsx';
-import PostCard from './componentes/PostCard.jsx'; // ✅ 1. Importamos un nuevo componente para mostrar los posts
+import PostCard from './componentes/PostCard.jsx';
+import { BsThreeDots, BsTrash } from 'react-icons/bs';
+import { useNavigate } from "react-router-dom"; 
 
-// =====================================================================
-// Componente de la Barra de Navegación (Sin cambios)
-// =====================================================================
+
 function Cabecera() {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (e) => {
+        e.preventDefault(); // Evita que la página se recargue
+        if (query.trim()) {
+            navigate(`/search?q=${query}`);
+        }
+    };
+
   return (
     <>
       <nav className="navbar bg-body-tertiary fixed-top" id="navbar">
@@ -19,12 +29,14 @@ function Cabecera() {
             <img src="/petconnect.webp" alt="PetConnect" width="33" height="32" />
           </Link>
           <h1 className="navbar-brand mb-0">PetConnect</h1>
-          <form className="d-flex rounded-pill mx-auto" role="search" style={{ flex: 1, maxWidth: "500px" }}>
+          <form className="d-flex rounded-pill mx-auto" role="search" onSubmit={handleSearchSubmit} style={{ flex: 1, maxWidth: "500px" }}>
             <input
               className="form-control rounded-pill"
               type="search"
               placeholder="Buscar mascotas, dueños..."
               aria-label="Buscar mascotas, dueños.."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
           </form>
           <Notificaciones />
@@ -37,15 +49,12 @@ function Cabecera() {
   );
 }
 
-// =====================================================================
-// Componente del Perfil de Usuario (¡Actualizado!)
-// =====================================================================
 function Perfil() {
   const [perfil, setPerfil] = useState(null);
   const [mascotas, setMascotas] = useState([]);
-  const [posts, setPosts] = useState([]); // ✅ 2. Añadimos estado para guardar las publicaciones
+  const [posts, setPosts] = useState([]); // Añadimos estado para guardar las publicaciones
 
-  // ✅ 3. Creamos una función reutilizable para obtener las publicaciones
+  // Creamos una función reutilizable para obtener las publicaciones
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -83,10 +92,10 @@ function Perfil() {
     };
 
     obtenerDatosIniciales();
-    fetchPosts(); // ✅ 4. Obtenemos las publicaciones al cargar el componente
+    fetchPosts(); // Obtenemos las publicaciones al cargar el componente
   }, []);
 
-  // ✅ 5. Creamos la función para pasarla como prop. Se ejecutará cuando se cree un post.
+  // Creamos la función para pasarla como prop. Se ejecutará cuando se cree un post.
   const handlePostCreated = () => {
     fetchPosts(); // Simplemente volvemos a pedir las publicaciones para actualizar la lista
   };
@@ -99,7 +108,6 @@ function Perfil() {
     <div className="row" style={{ marginTop: "100px" }}>
       {/* === COLUMNA IZQUIERDA (Perfil y Mascotas) === */}
       <div className="col-md-4 fixed-top" style={{ marginTop: "100px" }}>
-        {/* ... (Tu código para el perfil y la lista de mascotas no cambia) ... */}
         {/* Card 1: PERFIL DE USUARIO */}
         <div
           className="shadow-sm border-0 mb-4"
@@ -189,7 +197,6 @@ function Perfil() {
       <div className="col-md-6 offset-md-4" style={{ marginLeft: "470px" }}>
         {/* --- Card 3: CREAR PUBLICACIÓN --- */}
         <CrearPublicacion
-          // ✅ 6. Pasamos las props necesarias que diseñamos antes
           profileImageUrl={
             perfil.imagen
               ? `${import.meta.env.VITE_API_URL}${perfil.imagen}`
@@ -199,10 +206,10 @@ function Perfil() {
           onPostCreated={handlePostCreated}
         />
 
-        {/* ✅ 7. Mostramos la lista de publicaciones */}
+        {/* Mostramos la lista de publicaciones */}
         <div className="mt-4">
           {posts.map((post) => (
-            <PostCard key={post.id} postData={post} currentUserId={perfil.id} />
+            <PostCard key={post.id} postData={post} currentUser={perfil} />
           ))}
         </div>
       </div>

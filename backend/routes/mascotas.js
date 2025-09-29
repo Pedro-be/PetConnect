@@ -3,18 +3,18 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 
-// 1. Importamos el middleware de autenticación UNA SOLA VEZ.
+// Importamos el middleware de autenticación UNA SOLA VEZ.
 const verificarToken = require('../middleware/auth'); 
 
-// 2. Importamos TODAS las funciones que vamos a usar, incluyendo la de eliminar.
+// Importamos TODAS las funciones que vamos a usar, incluyendo la de eliminar.
 const { 
     obtenerMascotas, 
     agregarMascota, 
     actualizarMascota,
-    eliminarMascota // <-- Se añade la función que faltaba
+    eliminarMascota
 } = require('../controllers/mascotasController');
 
-// 3. Creamos la configuración de 'upload' antes de definir las rutas.
+//  Creamos la configuración de 'upload' antes de definir las rutas.
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
@@ -45,7 +45,7 @@ router.put(
 router.delete(
   '/:id',
   verificarToken,
-  eliminarMascota // <-- 4. Usamos la función directamente, sin "mascotasController."
+  eliminarMascota // Usamos la función directamente, sin "mascotasController."
 );
 
 module.exports = router;
