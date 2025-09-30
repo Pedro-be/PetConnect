@@ -3,17 +3,47 @@ import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { FaPaw, FaCalendarAlt, FaMapMarkerAlt, FaNotesMedical } from 'react-icons/fa';
 
+
+const formatLocalDateTime = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    // Verificamos si la fecha es válida para evitar errores
+    if (isNaN(d.getTime())) {
+        console.error("Fecha inválida recibida:", date);
+        return '';
+    }
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+
 const CitaModal = ({ show, onHide, onSave, onDelete, cita, mascotas }) => {
     const [formData, setFormData] = useState({});
 
     useEffect(() => {
-        if (cita) {
-            setFormData({
-                ...cita.resource,
-                fecha_hora: new Date(cita.start).toISOString().slice(0, 16)
-            });
-        } else {
-            setFormData({ mascota_id: '', titulo: '', tipo_cita: 'Veterinario', fecha_hora: '', ubicacion: '', notas: '' });
+        if (show) { // Solo actualiza cuando el modal se muestra
+            if (cita) {
+                setFormData({
+                    ...cita.resource,
+                    // Usamos nuestra nueva función para mostrar la hora local correcta
+                    fecha_hora: formatLocalDateTime(cita.start)
+                });
+            } else {
+                setFormData({ 
+                    mascota_id: '', 
+                    titulo: '', 
+                    tipo_cita: 'Veterinario', 
+                    fecha_hora: '', 
+                    ubicacion: '', 
+                    notas: '' 
+                });
+            }
         }
     }, [cita, show]);
 
@@ -45,7 +75,6 @@ const CitaModal = ({ show, onHide, onSave, onDelete, cita, mascotas }) => {
                         <Form.Control type="text" name="titulo" value={formData.titulo || ""} onChange={handleChange} placeholder="Ej: Chequeo anual" />
                     </Form.Group>
                     
-                    {/*Estructura en dos columnas para Mascota y Tipo */}
                     <Row>
                         <Col md={6}>
                             <Form.Group className="mb-4">

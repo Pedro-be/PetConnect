@@ -199,17 +199,49 @@ router.get('/:postId/comentarios', async (req, res) => {
         //Añadimos un JOIN para traer la imagen del autor del comentario
         const query = `
             SELECT 
-                c.*,
+                c.id,
+                c.contenido,
+                c.fecha_creacion,
+                c.usuario_id AS autor_id,  -- <<< ¡ESTA LÍNEA ES LA SOLUCIÓN!
                 u.nombre AS autor_nombre,
-                u.imagen AS autor_foto_url 
-            FROM comentarios c
-            JOIN usuarios u ON c.usuario_id = u.id
-            WHERE c.publicacion_id = ?
-            ORDER BY c.fecha_creacion ASC;
+                u.imagen AS autor_foto_url
+            FROM 
+                comentarios c
+            JOIN 
+                usuarios u ON c.usuario_id = u.id
+            WHERE 
+                c.publicacion_id = ?
+            ORDER BY 
+                c.fecha_creacion ASC;
         `;
         const [comments] = await db.query(query, [postId]);
         res.json(comments);
     } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+// --- ELIMINAR UN COMENTARIO ---
+// DELETE /api/posts/:postId/comentarios/:commentId
+router.delete('/:postId/comentarios/:commentId', verificarToken, async (req, res) => {
+    const { commentId } = req.params;
+    const usuarioId = req.usuario.id;
+
+    try {
+        const [rows] = await db.query('SELECT usuario_id FROM comentarios WHERE id = ?', [commentId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Comentario no encontrado.' });
+        }
+        if (rows[0].usuario_id !== usuarioId) {
+            return res.status(403).json({ error: 'No tienes permiso para eliminar este comentario.' });
+        }
+
+        await db.query('DELETE FROM comentarios WHERE id = ?', [commentId]);
+        res.status(200).json({ message: 'Comentario eliminado correctamente.' });
+
+    } catch (error) {
+        console.error('Error al eliminar comentario:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });

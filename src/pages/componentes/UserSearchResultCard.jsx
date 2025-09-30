@@ -21,9 +21,7 @@ const UserSearchResultCard = ({ user }) => {
                     <span><FaEdit /> {user.publicaciones_count} Publicaciones</span>
                 </div>
             </div>
-            <Link to={`/perfil/${user.id}`} className="btn user-card-button" style={{ backgroundColor: '#F97316', color: 'white' }}>
-                Ver Perfil
-            </Link>
+            
         </div>
     );
 };

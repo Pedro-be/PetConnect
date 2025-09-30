@@ -1,0 +1,49 @@
+/* src/pages/Medicamentos.css */
+
+.medicamentos-page { display: flex; background-color: #f8f9fa; }
+.content-area { flex-grow: 1; padding: 2.5rem; margin-left: 250px; }
+.page-header { /* ... (puedes reusar el de Citas.css) ... */ }
+
+.mascota-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.mascota-summary-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.mascota-summary-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+}
+.mascota-summary-card h5 { font-weight: 600; margin-bottom: 0.25rem; }
+.mascota-summary-card p { font-size: 0.9rem; color: #6c757d; margin: 0; }
+
+.medicamentos-list {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+}
+.list-title { margin-bottom: 1.5rem; font-weight: 600; }
+.medicamento-item {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.medicamento-item:last-child { border-bottom: none; }
+.med-icon { font-size: 1.5rem; color: #F97316; }
+.med-info strong { display: block; font-weight: 600; }
+.med-info span, .med-details span, .med-dates span { display: block; font-size: 0.9rem; color: #6c757d; }

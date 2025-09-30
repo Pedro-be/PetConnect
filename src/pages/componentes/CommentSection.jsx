@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import apiFetch from '../../api.js';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './CommentSection.css';
 
 const CommentSection = ({ postId, currentUser }) => {
@@ -10,18 +12,15 @@ const CommentSection = ({ postId, currentUser }) => {
     const [isLoading, setIsLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL;
 
-    // Esta función es la que no está funcionando correctamente
     const fetchComments = async () => {
-        setIsLoading(true); // Se asegura de mostrar 'Cargando...'
+        setIsLoading(true);
         try {
-            // Verifica que el postId sea válido antes de llamar
             if (!postId) return; 
             const data = await apiFetch(`/api/posts/${postId}/comentarios`);
             setComments(data);
         } catch (error) {
             console.error("Error al cargar comentarios:", error);
         } finally {
-            // Esta línea es la que quita el mensaje de "Cargando..."
             setIsLoading(false);
         }
     };
@@ -35,9 +34,9 @@ const CommentSection = ({ postId, currentUser }) => {
         const trimmedComment = newComment.trim();
         if (trimmedComment === '' || !currentUser) return;
 
-        // Lógica de actualización optimista
         const tempComment = {
             id: Date.now(),
+            autor_id: currentUser.id,
             autor_nombre: currentUser.nombre,
             autor_foto_url: currentUser.imagen,
             contenido: trimmedComment,
@@ -56,12 +55,29 @@ const CommentSection = ({ postId, currentUser }) => {
                     contenido: trimmedComment,
                 }),
             });
-            // Recarga los comentarios del servidor para tener los datos reales
             fetchComments();
         } catch (error) {
             console.error("Error al enviar comentario:", error);
-            alert("No se pudo enviar el comentario.");
+            toast.error("No se pudo enviar el comentario.");
             setComments(prevComments => prevComments.filter(c => !c.isOptimistic));
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        const originalComments = [...comments];
+        // Actualización optimista: elimina el comentario de la UI al instante
+        setComments(prevComments => prevComments.filter(c => c.id !== commentId));
+
+        try {
+            await apiFetch(`/api/posts/${postId}/comentarios/${commentId}`, {
+                method: 'DELETE',
+            });
+            toast.success('Comentario eliminado');
+        } catch (error) {
+            console.error("Error al eliminar comentario:", error);
+            toast.error("No se pudo eliminar el comentario.");
+            // Si hay un error, revierte y vuelve a mostrar el comentario
+            setComments(originalComments);
         }
     };
 
@@ -91,22 +107,38 @@ const CommentSection = ({ postId, currentUser }) => {
 
             <div className="comment-list">
                 {isLoading && <p className="text-muted text-center">Cargando comentarios...</p>}
-                {!isLoading && comments.map(comment => (
-                    <div key={comment.id} className={`comment d-flex mb-3 ${comment.isOptimistic ? 'optimistic' : ''}`}>
-                        <img 
-                            src={comment.autor_foto_url ? `${API_URL}${comment.autor_foto_url}` : '/petconnect.webp'} 
-                            alt={comment.autor_nombre}
-                            className="comment-avatar"
-                        />
-                        <div className="comment-body">
-                            <a href="#" className="comment-author">{comment.autor_nombre}</a>
-                            <p className="comment-text mb-0">{comment.contenido}</p>
-                            <small className="comment-timestamp text-muted">
-                                {formatDistanceToNow(new Date(comment.fecha_creacion), { locale: es })}
-                            </small>
+                {!isLoading && comments.map(comment => {
+                    const isOwner = currentUser && currentUser.id == comment.autor_id;
+
+                    return (
+                        <div key={comment.id} className={`comment d-flex mb-3 ${comment.isOptimistic ? 'optimistic' : ''}`}>
+                            <img 
+                                src={comment.autor_foto_url ? `${API_URL}${comment.autor_foto_url}` : '/petconnect.webp'} 
+                                alt={comment.autor_nombre}
+                                className="comment-avatar"
+                            />
+                            <div className="comment-body">
+                                <div className="comment-header">
+                                    <a href="#" className="comment-author">{comment.autor_nombre}</a>
+                                    {/* Lógica final: El botón solo se renderiza si eres el dueño */}
+                                    {isOwner && (
+                                        <button 
+                                            className="btn btn-sm btn-link text-danger comment-delete-btn"
+                                            onClick={() => handleDeleteComment(comment.id)}
+                                            title="Eliminar comentario"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="comment-text mb-0">{comment.contenido}</p>
+                                <small className="comment-timestamp text-muted">
+                                    {formatDistanceToNow(new Date(comment.fecha_creacion), { locale: es })}
+                                </small>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

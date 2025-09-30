@@ -1,4 +1,45 @@
 /* src/pages/componentes/CommentSection.css */
+.comment-body {
+    flex-grow: 1;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #212529;
+    text-decoration: none;
+}
+.comment-author:hover {
+    text-decoration: underline;
+}
+
+.comment-delete-btn {
+    padding: 0.1rem 0.2rem;
+    line-height: 1;
+    transition: opacity 0.2s ease-in-out;
+    /* El botón ahora es invisible por defecto */
+    opacity: 0; 
+}
+
+/* Y estas reglas lo harán visible al pasar el mouse */
+.comment:hover .comment-delete-btn {
+    opacity: 0.6; 
+}
+
+.comment-delete-btn:hover {
+    opacity: 1;
+}
+
+
+.optimistic {
+    opacity: 0.6;
+}
+
 
 .comment-form {
     gap: 10px;

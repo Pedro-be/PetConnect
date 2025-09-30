@@ -6,6 +6,7 @@ import PerfilUsuario from "./pages/PerfilUsuario";
 import MisPublicaciones from './pages/MisPublicaciones';
 import Citas from "./pages/Citas";
 import SearchResults from './pages/SearchResults';
+import Medicamentos from "./pages/Medicamentos";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/MisPublicaciones" element={<MisPublicaciones />} />
         <Route path="/Citas" element={<Citas />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/Medicamentos" element={<Medicamentos />} />
       </Routes>
       <ToastContainer
                 position="top-right" // Posición en la pantalla

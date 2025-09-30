@@ -25,6 +25,7 @@ router.post("/login", loginUsuario);
 router.get('/check-email', verificarEmail);
 router.get("/perfil", verificarToken, obtenerPerfil);
 
+
 router.put('/actualizar', verificarToken, upload.single('imagen'), async (req, res) => {
     try {
         const { nombre, email, telefono, ciudad, direccion } = req.body;

@@ -44,6 +44,9 @@ app.use('/api/citas', citasRoutes);
 const searchRoutes = require('./routes/search'); // Importa
 app.use('/api/search', searchRoutes);
 
+app.use('/api/medicamentos', require('./routes/medicamentos'));
+
+
 
 
 app.listen(5000, () => {

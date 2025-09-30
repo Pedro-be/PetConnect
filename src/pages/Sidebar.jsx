@@ -80,7 +80,7 @@ function Sidebar() {
             <MenuItem
               icon="💊"
               text="Medicamentos"
-              to="/medicamentos"
+              to="/Medicamentos"
               onClick={() => setIsOpen(false)}
             />
           </ul>
